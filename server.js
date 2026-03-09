@@ -46,22 +46,22 @@ function hashPassword(password) {
 
 async function createTables() {
   await pool.query(`
-CREATE TABLE usersfiles (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  filename VARCHAR(255) NOT NULL,
-  mime_type VARCHAR(100) NOT NULL,
-  size INT NOT NULL,
-  data LONGBLOB NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+    CREATE TABLE IF NOT EXISTS usersfiles (
+      id SERIAL PRIMARY KEY,
+      filename VARCHAR(255) NOT NULL,
+      mime_type VARCHAR(100) NOT NULL,
+      size INT NOT NULL,
+      data BYTEA NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
   `);
 
-    await pool.query(`
-CREATE TABLE usersfiles (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100),
-  password VARCHAR(100)
-);
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(100),
+      password VARCHAR(100)
+    );
   `);
 }
 
@@ -287,5 +287,6 @@ app.post("/delete/:id", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
 
 
