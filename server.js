@@ -26,7 +26,8 @@ const saltRounds = 8;
 app.use(
   cors({
     origin: "http://file-manager-fd.s3-website.eu-north-1.amazonaws.com",
-  })
+    methods: ["GET", "POST"],
+  }),
 );
 app.use(express.json());
 app.use(bodyParser.json());
@@ -287,6 +288,7 @@ app.post("/delete/:id", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
 
 
 
