@@ -44,6 +44,30 @@ function hashPassword(password) {
   });
 }
 
+async function createTables() {
+  await pool.query(`
+CREATE TABLE usersfiles (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  filename VARCHAR(255) NOT NULL,
+  mime_type VARCHAR(100) NOT NULL,
+  size INT NOT NULL,
+  data LONGBLOB NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+  `);
+
+    await pool.query(`
+CREATE TABLE usersfiles (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100),
+  password VARCHAR(100)
+);
+  `);
+}
+
+createTables();
+
+
 app.post("/register-user", async (req, res) => {
   const { name, password, reppeatedPassword } = req.body;
   console.log("registering user...");
@@ -263,4 +287,5 @@ app.post("/delete/:id", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
 
