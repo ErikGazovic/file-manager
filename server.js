@@ -28,7 +28,9 @@ app.use(
     origin: "http://file-manager-gazovic.s3-website.eu-north-1.amazonaws.com",
     methods: ["GET", "POST", "OPTIONS"], // include OPTIONS for preflight
     allowedHeaders: ["Content-Type"],    // allow your JSON header
-  }));
+  })
+);
+
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -46,7 +48,7 @@ function hashPassword(password) {
 }
 async function createTables() {
   await pool.query(`
-    CREATE TABLE IF NOT EXISTS usersfiles (
+    CREATE TABLE usersfiles (
       id SERIAL PRIMARY KEY,
       filename VARCHAR(255) NOT NULL,
       originalname VARCHAR(255),
@@ -209,6 +211,7 @@ app.get("/get-files/:name", async (req, res) => {
     res.status(500).json({ error: err.message, idk: "Hello" });
   }
 });
+
 app.get("/ping", (req, res) => {
   console.log("Ping received!");
   res.send("pong");
@@ -318,9 +321,3 @@ async function startServer() {
 }
 
 startServer();
-
-
-
-
-
-
