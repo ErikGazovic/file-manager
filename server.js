@@ -46,13 +46,18 @@ function hashPassword(password) {
 }
 
 async function createTables() {
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS usersfiles (
       id SERIAL PRIMARY KEY,
       filename VARCHAR(255) NOT NULL,
+      originalname VARCHAR(255),
       mime_type VARCHAR(100) NOT NULL,
       size INT NOT NULL,
       data BYTEA NOT NULL,
+      username VARCHAR(100),
+      tag VARCHAR(50),
+      extention VARCHAR(20),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
@@ -298,5 +303,6 @@ async function startServer() {
 }
 
 startServer();
+
 
 
