@@ -191,7 +191,7 @@ if (req.query.tags) {
     safeLimit,
     safeOffset,
   ]);
-
+console.log("Getting all the files");
   return res.json({
     files: result.rows,
     total: Number(countResult.rows[0].count),
@@ -303,4 +303,5 @@ async function startServer() {
 }
 
 startServer();
+
 
