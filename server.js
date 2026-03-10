@@ -287,7 +287,14 @@ app.post("/delete/:id", async (req, res) => {
     .json({ message: `${file.filename}`});
 });
 
-app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+async function startServer() {
+  await createTables();
+  console.log("Creating tables...");
+  app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+}
+
+startServer();
+
 
 
 
