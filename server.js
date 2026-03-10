@@ -100,36 +100,44 @@ app.post("/register-user", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-  const { name, password } = req.body;
-  if (isEmpty(name) || isEmpty(password)) {
-    return res.status(400).json({ message: "Niektoré polia sú nevyplnené" });
-  }
+  try {
+    const { name, password } = req.body;
 
-  if (!(await userExistsInDB(name))) {
+    if (!name || !password) {
+      return res.status(400).json({
+        message: "Niektoré polia sú nevyplnené",
+      });
+    }
+
     const user = await getUserByName(name);
 
+    if (!user) {
+      return res.status(404).json({
+        message: "Používateľ s týmto menom sa nenašiel",
+      });
+    }
+
     const storedHashedPassword = user.password;
-    bcrypt.compare(password, storedHashedPassword, (err, result) => {
-      if (err) {
-        return res.json({ message: "Something went wrong", status: 500 });
-      } else {
-        if (result) {
-          setTimeout(() => {
-            return res.json({
-              message: "Successfuly logged in",
-              name: user.name,
-              status: 200,
-            });
-          }, 500);
-        } else {
-          return res.status(402).json({ message: "Nesprávne heslo" });
-        }
-      }
+
+    const result = await bcrypt.compare(password, storedHashedPassword);
+
+    if (!result) {
+      return res.status(401).json({
+        message: "Nesprávne heslo",
+      });
+    }
+
+    return res.json({
+      message: "Successfuly logged in",
+      name: user.name,
+      status: 200,
     });
-  } else {
-    return res
-      .status(402)
-      .json({ message: "Používateľ s týmto menom sa nenašiel" });
+
+  } catch (err) {
+    console.error("LOGIN ERROR:", err);
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 });
 
@@ -290,4 +298,5 @@ async function startServer() {
 }
 
 startServer();
+
 
