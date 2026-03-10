@@ -20,7 +20,7 @@ import pool from "./db.js";
 import iconv from "iconv-lite";
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const saltRounds = 8;
 
 app.use(
@@ -66,9 +66,6 @@ async function createTables() {
   `);
 }
 
-createTables();
-
-
 app.post("/register-user", async (req, res) => {
   const { name, password, reppeatedPassword } = req.body;
   console.log("registering user...");
@@ -85,16 +82,14 @@ app.post("/register-user", async (req, res) => {
     console.log("Passwords do not match");
     return res.json({ message: "Heslá sa nezhodujú", status: 401 });
   } else {
-    if (await userExistsInDB(name)) {
+    if (!(await userExistsInDB(name))) {
       const hashedPassword = await hashPassword(password);
       await addUserToDB(name, hashedPassword);
-      console.log("SUCCESS");
-      setTimeout(() => {
-        return res.json({
-          message: "Používateľ bol úspešne registrovaný",
-          status: 200,
-        });
-      }, 800);
+
+      return res.json({
+        message: "Používateľ bol úspešne registrovaný",
+        status: 200,
+      });
     } else {
       return res.json({
         message: "Používateľ s týmto menom už existuje",
@@ -167,7 +162,7 @@ app.get("/get-files/:name", async (req, res) => {
    FROM usersFiles
    WHERE tag IN (${placeholders})
    AND username = ?`,
-      [...tags, username]
+      [...tags, username],
     );
 
     const rows = await pool.query(sql, [
@@ -195,9 +190,12 @@ app.post("/add-file/:name", upload.single("file"), async (req, res) => {
   const username = req.params.name;
   const { name, tag } = req.body;
   const file = req.file;
-    let safeOriginalName = file.originalname;
+  let safeOriginalName = file.originalname;
   try {
-    safeOriginalName = iconv.decode(Buffer.from(file.originalname, "binary"), "utf8");
+    safeOriginalName = iconv.decode(
+      Buffer.from(file.originalname, "binary"),
+      "utf8",
+    );
   } catch (err) {
     console.error("Error decoding filename:", err);
   }
@@ -233,14 +231,14 @@ app.post("/add-file/:name", upload.single("file"), async (req, res) => {
     let fixedDuplacite = firstPart + ` (${count})` + extenction;
     fileRecord.originalname = fixedDuplacite;
   }
-  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
   try {
     await addFile(
       username,
       name,
       tag,
       fileRecord,
-      getExtention(fileRecord.originalname)
+      getExtention(fileRecord.originalname),
     );
     setTimeout(() => {
       return res.json({
@@ -274,7 +272,7 @@ app.get("/download/:id", async (req, res) => {
   res.setHeader("Content-Type", file.mime_type);
   res.setHeader(
     "Content-Disposition",
-    `attachment; filename=""${encodeURIComponent(file.filename)}""`
+    `attachment; filename=""${encodeURIComponent(file.filename)}""`,
   );
   res.send(file.data);
 });
@@ -282,9 +280,7 @@ app.get("/download/:id", async (req, res) => {
 app.post("/delete/:id", async (req, res) => {
   const file = await getFile(req.params.id);
   await deleteFile(file.id);
-  return res
-    .status(200)
-    .json({ message: `${file.filename}`});
+  return res.status(200).json({ message: `${file.filename}` });
 });
 
 async function startServer() {
@@ -294,8 +290,3 @@ async function startServer() {
 }
 
 startServer();
-
-
-
-
-
