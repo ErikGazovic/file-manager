@@ -72,7 +72,7 @@ async function createTables() {
 }
 
 async function deleteTable() {
-  await pool.query("DROP TABLE userfiles");
+  await pool.query("DROP TABLE usersfiles");
 }
 
 
@@ -327,3 +327,4 @@ async function startServer() {
 }
 
 startServer();
+
