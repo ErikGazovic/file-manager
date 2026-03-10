@@ -69,10 +69,7 @@ async function createTables() {
       password VARCHAR(100)
     );
   `);
-}
-
-
-deleteTable();
+};
 app.post("/register-user", async (req, res) => {
   const { name, password, reppeatedPassword } = req.body;
   console.log("registering user...");
@@ -323,5 +320,6 @@ async function startServer() {
 }
 
 startServer();
+
 
 
