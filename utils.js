@@ -17,48 +17,56 @@ export function dontMatch(value, otherValue) {
 }
 
 export async function userExistsInDB(name) {
-  const [rows] = await pool.query(
-    "SELECT COUNT(*) AS count FROM users WHERE name = ?",
+  const result = await pool.query(
+    "SELECT COUNT(*) AS count FROM users WHERE name = $1",
     [name]
   );
-  return rows[0].count < 1;
+
+  return Number(result.rows[0].count) < 1;
 }
 
 export async function addUserToDB(name, hashedPassword) {
-  await pool.query("INSERT INTO users (name, password) VALUES (?, ?)", [
-    name,
-    hashedPassword,
-  ]);
+  await pool.query(
+    "INSERT INTO users (name, password) VALUES ($1, $2)",
+    [name, hashedPassword]
+  );
 }
 export async function getUserByName(name) {
-  const [rows] = await pool.query("SELECT * FROM users WHERE name = ?", [name]);
+  const result = await pool.query(
+    "SELECT * FROM users WHERE name = $1",
+    [name]
+  );
 
-  return rows[0];
+  return result.rows[0];
 }
 
 export async function getFilesByName(name, limit, offset) {
-  const [rows] = await pool.query(
-    "SELECT * FROM usersFiles WHERE username = ? LIMIT ? OFFSET ?",
+  const result = await pool.query(
+    "SELECT * FROM usersfiles WHERE username = $1 LIMIT $2 OFFSET $3",
     [name, limit, offset]
   );
-  const files = rows.map((row) => ({
+
+  const files = result.rows.map((row) => ({
     ...row,
     data: row.data.toString("base64"),
   }));
 
-  const [[{ count }]] = await pool.query(
-    "SELECT COUNT(*) AS count FROM usersFiles WHERE username = ?",
+  const countResult = await pool.query(
+    "SELECT COUNT(*) AS count FROM usersfiles WHERE username = $1",
     [name]
   );
+
   return {
     files,
-    total: count
+    total: Number(countResult.rows[0].count),
   };
 }
 
 export async function addFile(username, name, tag, file, extention) {
-  const [rows] = await pool.query(
-    "INSERT INTO usersFiles (filename, mime_type, size, data, username, tag, originalname, extention) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+  const result = await pool.query(
+    `INSERT INTO usersfiles
+    (filename, mime_type, size, data, username, tag, originalname, extention)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
     [
       name,
       file.mimeType,
@@ -70,28 +78,33 @@ export async function addFile(username, name, tag, file, extention) {
       extention,
     ]
   );
-  return rows;
+
+  return result.rows;
 }
 
 export async function getFile(id) {
-  const [rows] = await pool.query("SELECT * FROM usersFiles WHERE id = ?", [
-    id,
-  ]);
-  const file = rows[0];
-  return file;
+  const result = await pool.query(
+    "SELECT * FROM usersfiles WHERE id = $1",
+    [id]
+  );
+
+  return result.rows[0];
 }
 
 export async function getFileByOriginalName(name) {
-  const [rows] = await pool.query(
-    "SELECT * FROM usersFiles WHERE originalname = ?",
+  const result = await pool.query(
+    "SELECT * FROM usersfiles WHERE originalname = $1",
     [name]
   );
-  const count = rows.length;
-  return count;
+
+  return result.rows.length;
 }
 
 export async function deleteFile(id) {
-  const [rows] = await pool.query("DELETE FROM usersFiles WHERE id = ?", [id]);
+  const result = await pool.query(
+    "DELETE FROM usersfiles WHERE id = $1",
+    [id]
+  );
 
-  return rows;
+  return result.rows;
 }
