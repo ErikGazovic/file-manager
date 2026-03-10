@@ -48,7 +48,7 @@ function hashPassword(password) {
 }
 async function createTables() {
   await pool.query(`
-    CREATE TABLE usersfiles (
+    CREATE TABLE IF NOT EXISTS usersfiles (
       id SERIAL PRIMARY KEY,
       filename VARCHAR(255) NOT NULL,
       originalname VARCHAR(255),
@@ -71,6 +71,12 @@ async function createTables() {
   `);
 }
 
+async function deleteTable() {
+  await pool.query("DROP TABLE userfiles");
+}
+
+
+deleteTable();
 app.post("/register-user", async (req, res) => {
   const { name, password, reppeatedPassword } = req.body;
   console.log("registering user...");
