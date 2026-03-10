@@ -71,10 +71,6 @@ async function createTables() {
   `);
 }
 
-async function deleteTable() {
-  await pool.query("DROP TABLE usersfiles");
-}
-
 
 deleteTable();
 app.post("/register-user", async (req, res) => {
@@ -152,7 +148,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/get-files/:name", async (req, res) => {
-  res.send("EDWFRGTHYT");
+  console.log("EDWFRGTHYT");
   try {
     const username = req.params.name;
     const page = Number(req.query.page) || 0;
@@ -327,4 +323,5 @@ async function startServer() {
 }
 
 startServer();
+
 
