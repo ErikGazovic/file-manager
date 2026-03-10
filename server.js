@@ -159,45 +159,44 @@ app.get("/get-files/:name", async (req, res) => {
       errorMessage: "Could not find the user",
     });
   }
-  if (req.query.tags) {
-    const tagsString = req.query.tags;
-    const tags = tagsString.split(",");
-const placeholders = tags.map((_, i) => `$${i + 1}`).join(",");
+if (req.query.tags) {
+  const tagsString = req.query.tags;
+  const tags = tagsString.split(",");
 
-const sql = `
-  SELECT * FROM usersfiles
-  WHERE tag IN (${placeholders})
-  AND username = $${username}
-  LIMIT $${safeLimit} OFFSET $${safeOffset}
-`;
+  const tagPlaceholders = tags.map((_, i) => `$${i + 1}`).join(",");
 
-const countQuery = `
-  SELECT COUNT(*) AS count
-  FROM usersfiles
-  WHERE tag IN (${placeholders})
-  AND username = $${username}
-`;
-const countResult = await pool.query(countQuery, [...tags, username]);
+  const usernameIndex = tags.length + 1;
+  const limitIndex = tags.length + 2;
+  const offsetIndex = tags.length + 3;
 
-    const rows = await pool.query(sql, [
-      ...tags,
-      username,
-      safeLimit,
-      safeOffset,
-    ]);
-    console.log(rows[0]);
-    return res.json({ files: rows[0], total: countResult });
-  }
+  const sql = `
+    SELECT * FROM usersfiles
+    WHERE tag IN (${tagPlaceholders})
+    AND username = $${usernameIndex}
+    LIMIT $${limitIndex} OFFSET $${offsetIndex}
+  `;
 
-  const response = await getFilesByName(username, limit, offset);
-  const files = response.files;
-  const total = response.total;
-  return res.status(200).json({
-    files,
-    total,
-    message: "Successfuly loaded files for user " + username,
+  const countQuery = `
+    SELECT COUNT(*) AS count
+    FROM usersfiles
+    WHERE tag IN (${tagPlaceholders})
+    AND username = $${usernameIndex}
+  `;
+
+  const countResult = await pool.query(countQuery, [...tags, username]);
+
+  const result = await pool.query(sql, [
+    ...tags,
+    username,
+    safeLimit,
+    safeOffset,
+  ]);
+
+  return res.json({
+    files: result.rows,
+    total: Number(countResult.rows[0].count),
   });
-});
+}});
 
 const upload = multer({ storage: multer.memoryStorage() });
 app.post("/add-file/:name", upload.single("file"), async (req, res) => {
@@ -304,3 +303,4 @@ async function startServer() {
 }
 
 startServer();
+
