@@ -29,10 +29,6 @@ app.use(
     methods: ["GET", "POST", "OPTIONS"], // include OPTIONS for preflight
     allowedHeaders: ["Content-Type"],    // allow your JSON header
   })
-);
-
-// Handle preflight requests
-app.options("*", cors());
 app.use(express.json());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -322,4 +318,5 @@ async function startServer() {
 }
 
 startServer();
+
 
