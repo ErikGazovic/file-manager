@@ -144,6 +144,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/get-files/:name", async (req, res) => {
+  console.log("EDWFRGTHYT");
   try {
     const username = req.params.name;
     const page = Number(req.query.page) || 0;
@@ -318,6 +319,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
