@@ -158,7 +158,7 @@ app.get("/get-files/:name", async (req, res) => {
 
     if (req.query.tags) {
       // original tag filter code
-      console.log(req.query.tags);
+      alert(req.query.tags);
       const tags = req.query.tags.split(",");
       const tagPlaceholders = tags.map((_, i) => `$${i + 1}`).join(",");
       const usernameIndex = tags.length + 1;
@@ -188,7 +188,7 @@ app.get("/get-files/:name", async (req, res) => {
       });
     } else {
       // no tags provided → just return all files for the user
-      console.log(username);
+      alert(username);
       const result = await pool.query(
         "SELECT * FROM usersfiles WHERE username = $1 LIMIT $2 OFFSET $3",
         [username, limit, offset]
@@ -207,6 +207,11 @@ app.get("/get-files/:name", async (req, res) => {
     console.error("Error in /get-files/:name route:", err);
     res.status(500).json({ error: err.message });
   }
+});
+
+app.get("/ping", (req, res) => {
+  console.log("Ping received!");
+  res.send("pong");
 });
 
 const upload = multer({ storage: multer.memoryStorage() });
@@ -313,5 +318,3 @@ async function startServer() {
 }
 
 startServer();
-
-
