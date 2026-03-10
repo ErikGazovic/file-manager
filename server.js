@@ -25,7 +25,7 @@ const saltRounds = 8;
 
 app.use(
   cors({
-    origin: "http://file-manager-fd.s3-website.eu-north-1.amazonaws.com",
+    origin: "http://file-manager-gazovic.s3-website.eu-north-1.amazonaws.com",
     methods: ["GET", "POST"],
   }),
 );
@@ -304,6 +304,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
