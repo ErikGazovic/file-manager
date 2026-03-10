@@ -82,7 +82,7 @@ app.post("/register-user", async (req, res) => {
     console.log("Passwords do not match");
     return res.json({ message: "Heslá sa nezhodujú", status: 401 });
   } else {
-    if (!(await userExistsInDB(name))) {
+    if (await userExistsInDB(name)) {
       const hashedPassword = await hashPassword(password);
       await addUserToDB(name, hashedPassword);
 
@@ -290,3 +290,4 @@ async function startServer() {
 }
 
 startServer();
+
