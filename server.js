@@ -45,8 +45,6 @@ function hashPassword(password) {
   });
 }
 async function createTables() {
-  
-
   await pool.query(`
     CREATE TABLE IF NOT EXISTS usersfiles (
       id SERIAL PRIMARY KEY,
@@ -137,7 +135,6 @@ app.post("/login", async (req, res) => {
       name: user.name,
       status: 200,
     });
-
   } catch (err) {
     console.error("LOGIN ERROR:", err);
     res.status(500).json({
@@ -147,57 +144,68 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/get-files/:name", async (req, res) => {
-  console.log("initiating getting all the files...");
-  const username = req.params.name;
-  const page = Number(req.query.page) || 0;
-  const limit = Number(req.query.limit) || 7;
-  const offset = page * limit;
-  const safeLimit = Math.max(0, Number(limit));
-  const safeOffset = Math.max(0, Number(offset));
-  if (!username) {
-    return res.status(402).json({
-      errorType: "Missing user name",
-      errorMessage: "Could not find the user",
-    });
-  }
-if (req.query.tags) {
-  const tagsString = req.query.tags;
-  const tags = tagsString.split(",");
+  try {
+    console.log("initiating getting all the files...");
+    const username = req.params.name;
+    const page = Number(req.query.page) || 0;
+    const limit = Number(req.query.limit) || 7;
+    const offset = page * limit;
+    const safeLimit = Math.max(0, Number(limit));
+    const safeOffset = Math.max(0, Number(offset));
+    if (!username) {
+      return res.status(402).json({
+        errorType: "Missing user name",
+        errorMessage: "Could not find the user",
+      });
+    }
+    if (req.query.tags) {
+      const tagsString = req.query.tags;
+      const tags = tagsString.split(",");
 
-  const tagPlaceholders = tags.map((_, i) => `$${i + 1}`).join(",");
+      const tagPlaceholders = tags.map((_, i) => `$${i + 1}`).join(",");
 
-  const usernameIndex = tags.length + 1;
-  const limitIndex = tags.length + 2;
-  const offsetIndex = tags.length + 3;
+      const usernameIndex = tags.length + 1;
+      const limitIndex = tags.length + 2;
+      const offsetIndex = tags.length + 3;
 
-  const sql = `
+      const sql = `
     SELECT * FROM usersfiles
     WHERE tag IN (${tagPlaceholders})
     AND username = $${usernameIndex}
     LIMIT $${limitIndex} OFFSET $${offsetIndex}
   `;
 
-  const countQuery = `
+      const countQuery = `
     SELECT COUNT(*) AS count
     FROM usersfiles
     WHERE tag IN (${tagPlaceholders})
     AND username = $${usernameIndex}
   `;
 
-  const countResult = await pool.query(countQuery, [...tags, username]);
+      const countResult = await pool.query(countQuery, [...tags, username]);
 
-  const result = await pool.query(sql, [
-    ...tags,
-    username,
-    safeLimit,
-    safeOffset,
-  ]);
-console.log("Getting all the files");
-  return res.json({
-    files: result.rows,
-    total: Number(countResult.rows[0].count),
-  });
-}});
+      const result = await pool.query(sql, [
+        ...tags,
+        username,
+        safeLimit,
+        safeOffset,
+      ]);
+      console.log("Getting all the files");
+      return res.json({
+        files: result.rows,
+        total: Number(countResult.rows[0].count),
+      });
+    }
+  } catch {
+    console.error("Error in /get-files/:name route:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get("/ping", (req, res) => {
+  console.log("Ping received!");
+  res.send("pong");
+});
 
 const upload = multer({ storage: multer.memoryStorage() });
 app.post("/add-file/:name", upload.single("file"), async (req, res) => {
@@ -269,15 +277,14 @@ app.put("/change-file/:id", async (req, res) => {
   const name = req.query.name;
   const tag = req.query.tag;
   const id = req.params.id;
-await pool.query(
-  "UPDATE usersfiles SET filename = $1, tag = $2 WHERE id = $3",
-  [name, tag, id]
-);
+  await pool.query(
+    "UPDATE usersfiles SET filename = $1, tag = $2 WHERE id = $3",
+    [name, tag, id],
+  );
 
-const result = await pool.query(
-  "SELECT * FROM usersfiles WHERE id = $1",
-  [id]
-);
+  const result = await pool.query("SELECT * FROM usersfiles WHERE id = $1", [
+    id,
+  ]);
   res.json(result);
 });
 
@@ -304,8 +311,3 @@ async function startServer() {
 }
 
 startServer();
-
-
-
-
-
