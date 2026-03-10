@@ -144,7 +144,7 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/get-files/:name", async (req, res) => {
-  console.log("EDWFRGTHYT");
+  res.send("EDWFRGTHYT");
   try {
     const username = req.params.name;
     const page = Number(req.query.page) || 0;
@@ -206,10 +206,9 @@ app.get("/get-files/:name", async (req, res) => {
     }
   } catch (err) {
     console.error("Error in /get-files/:name route:", err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err.message, idk: "Hello" });
   }
 });
-
 app.get("/ping", (req, res) => {
   console.log("Ping received!");
   res.send("pong");
@@ -319,6 +318,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
