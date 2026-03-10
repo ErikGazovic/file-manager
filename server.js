@@ -44,8 +44,8 @@ function hashPassword(password) {
     });
   });
 }
-
 async function createTables() {
+  
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS usersfiles (
@@ -162,21 +162,22 @@ app.get("/get-files/:name", async (req, res) => {
   if (req.query.tags) {
     const tagsString = req.query.tags;
     const tags = tagsString.split(",");
-    const placeholders = tags.map(() => "?").join(",");
+const placeholders = tags.map((_, i) => `$${i + 1}`).join(",");
 
-    const sql = `
-      SELECT * FROM usersfiles
-      WHERE tag IN (${placeholders})
-      AND username = ? LIMIT ? OFFSET ?
-    `;
+const sql = `
+  SELECT * FROM usersfiles
+  WHERE tag IN (${placeholders})
+  AND username = $${username}
+  LIMIT $${safeLimit} OFFSET $${safeOffset}
+`;
 
-    const [[{ count }]] = await pool.query(
-      `SELECT COUNT(*) AS count
-   FROM usersFiles
-   WHERE tag IN (${placeholders})
-   AND username = ?`,
-      [...tags, username],
-    );
+const countQuery = `
+  SELECT COUNT(*) AS count
+  FROM usersfiles
+  WHERE tag IN (${placeholders})
+  AND username = $${username}
+`;
+const countResult = await pool.query(countQuery, [...tags, username]);
 
     const rows = await pool.query(sql, [
       ...tags,
@@ -185,7 +186,7 @@ app.get("/get-files/:name", async (req, res) => {
       safeOffset,
     ]);
     console.log(rows[0]);
-    return res.json({ files: rows[0], total: count });
+    return res.json({ files: rows[0], total: countResult });
   }
 
   const response = await getFilesByName(username, limit, offset);
@@ -268,16 +269,16 @@ app.put("/change-file/:id", async (req, res) => {
   const name = req.query.name;
   const tag = req.query.tag;
   const id = req.params.id;
-  await pool.query("UPDATE usersFiles SET filename = ?, tag = ? WHERE id = ?", [
-    name,
-    tag,
-    id,
-  ]);
+await pool.query(
+  "UPDATE usersfiles SET filename = $1, tag = $2 WHERE id = $3",
+  [name, tag, id]
+);
 
-  const [rows] = await pool.query("SELECT * FROM usersFiles WHERE id = ?", [
-    id,
-  ]);
-  res.json(rows[0]);
+const result = await pool.query(
+  "SELECT * FROM usersfiles WHERE id = $1",
+  [id]
+);
+  res.json(result);
 });
 
 app.get("/download/:id", async (req, res) => {
@@ -303,6 +304,3 @@ async function startServer() {
 }
 
 startServer();
-
-
-
