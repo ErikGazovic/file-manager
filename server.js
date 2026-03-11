@@ -305,15 +305,20 @@ app.get("/download/:id", async (req, res) => {
       return res.status(404).send("File not found");
     }
 
-    const buffer = Buffer.from(file.data);
+    console.log(file.data);
+    console.log(typeof file.data);
+    const buffer = Buffer.isBuffer(file.data)
+      ? file.data
+      : Buffer.from(file.data, "binary");
 
-    res.set({
-      "Content-Type": file.mime_type,
-      "Content-Disposition": `attachment; filename="${file.originalname}"`,
-      "Content-Length": buffer.length
-    });
+    res.setHeader("Content-Type", file.mime_type);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${encodeURIComponent(file.originalname)}"`
+    );
+    res.setHeader("Content-Length", buffer.length);
 
-    res.send(buffer);
+    res.send(buffer); // Use send for Buffer
   } catch (err) {
     console.error("Download error:", err);
     res.status(500).send("Download failed");
@@ -333,6 +338,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
