@@ -300,19 +300,14 @@ app.put("/change-file/:id", async (req, res) => {
 app.get("/download/:id", async (req, res) => {
   try {
     const file = await getFile(req.params.id);
-
-    const buffer = Buffer.isBuffer(file.data)
-      ? file.data
-      : Buffer.from(file.data);
-
     res.setHeader("Content-Type", file.mime_type);
     res.setHeader(
       "Content-Disposition",
       `attachment; filename="${file.originalname}"`
     );
-    res.setHeader("Content-Length", buffer.length);
+    res.setHeader("Content-Length", file.data);
 
-    res.send(buffer);
+    res.send(file.data);
   } catch (err) {
     console.error("Download error:", err);
     res.status(500).send("Download failed");
@@ -332,6 +327,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
