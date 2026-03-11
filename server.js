@@ -309,14 +309,15 @@ app.get("/download/:id", async (req, res) => {
     console.log(typeof file.data);
     const buffer = Buffer.isBuffer(file.data)
       ? file.data
-      : Buffer.from(file.data, "binary");
+      : Buffer.from(file.data, "base64");
 
-    res.setHeader("Content-Type", file.mime_type);
+    res.setHeader("Content-Type", file.mime_type || "application/octet-stream");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${encodeURIComponent(file.originalname)}"`
+      `attachment; filename="${encodeURIComponent(file.originalname || "file")}"`,
     );
-
+    res.setHeader("Content-Length", buffer.length);
+    res.send(buffer);
     res.send(buffer); // Use send for Buffer
   } catch (err) {
     console.error("Download error:", err);
@@ -337,6 +338,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
