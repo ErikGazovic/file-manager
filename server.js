@@ -298,13 +298,21 @@ app.put("/change-file/:id", async (req, res) => {
 });
 
 app.get("/download/:id", async (req, res) => {
-  const file = await getFile(req.params.id);
-  res.setHeader("Content-Type", file.mime_type);
-  res.setHeader(
-    "Content-Disposition",
-    `attachment; filename="${encodeURIComponent(file.filename)}"`,
-  );
-  res.send(file.data);
+  try {
+    const file = await getFile(req.params.id);
+
+    res.setHeader("Content-Type", file.mime_type);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${encodeURIComponent(file.originalname)}"`
+    );
+    res.setHeader("Content-Length", file.data.length);
+
+    res.end(file.data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Download failed");
+  }
 });
 
 app.post("/delete/:id", async (req, res) => {
@@ -320,6 +328,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
