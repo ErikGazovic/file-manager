@@ -300,7 +300,8 @@ app.put("/change-file/:id", async (req, res) => {
 app.get("/download/:id", async (req, res) => {
   try {
     const file = await getFile(req.params.id);
-
+    console.log(file.data);
+    console.log(typeof file.data);
     res.setHeader("Content-Type", file.mime_type);
     res.setHeader(
       "Content-Disposition",
@@ -328,6 +329,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
