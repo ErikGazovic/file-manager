@@ -305,26 +305,23 @@ app.get("/download/:id", async (req, res) => {
       return res.status(404).send("File not found");
     }
 
-    console.log(file.data);
-    console.log(typeof file.data);
-    const buffer = Buffer.isBuffer(file.data)
-      ? file.data
-      : Buffer.from(file.data, "base64");
+    const buffer = file.data; // already a Buffer
 
-    res.setHeader("Content-Type", file.mime_type || "application/octet-stream");
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${encodeURIComponent(file.originalname || "file")}"`,
-    );
-    res.setHeader("Content-Length", buffer.length);
-    res.send(buffer);
-    res.send(buffer); // Use send for Buffer
+    res.set({
+      "Content-Type": file.mime_type || "application/octet-stream",
+      "Content-Disposition": `attachment; filename="${encodeURIComponent(file.originalname)}"`,
+      "Content-Length": buffer.length
+    });
+
+    return res.send(buffer); // IMPORTANT: return
   } catch (err) {
     console.error("Download error:", err);
-    res.status(500).send("Download failed");
+
+    if (!res.headersSent) {
+      return res.status(500).send("Download failed");
+    }
   }
 });
-
 app.post("/delete/:id", async (req, res) => {
   const file = await getFile(req.params.id);
   await deleteFile(file.id);
@@ -338,6 +335,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
