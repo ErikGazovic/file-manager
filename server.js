@@ -301,16 +301,21 @@ app.get("/download/:id", async (req, res) => {
   try {
     const file = await getFile(req.params.id);
 
-    res.setHeader("Content-Type", file.mime_type);
-    res.setHeader(
-      "Content-Disposition",
-      `attachment; filename="${encodeURIComponent(file.originalname)}"`
-    );
-    res.setHeader("Content-Length", file.data.length);
+    if (!file) {
+      return res.status(404).send("File not found");
+    }
 
-    res.end(file.data);
+    const buffer = Buffer.from(file.data);
+
+    res.set({
+      "Content-Type": file.mime_type,
+      "Content-Disposition": `attachment; filename="${file.originalname}"`,
+      "Content-Length": buffer.length
+    });
+
+    res.send(buffer);
   } catch (err) {
-    console.error(err);
+    console.error("Download error:", err);
     res.status(500).send("Download failed");
   }
 });
@@ -328,6 +333,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
