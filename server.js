@@ -316,7 +316,6 @@ app.get("/download/:id", async (req, res) => {
       "Content-Disposition",
       `attachment; filename="${encodeURIComponent(file.originalname)}"`
     );
-    res.setHeader("Content-Length", buffer.length);
 
     res.send(buffer); // Use send for Buffer
   } catch (err) {
@@ -338,6 +337,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
