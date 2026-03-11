@@ -300,18 +300,21 @@ app.put("/change-file/:id", async (req, res) => {
 app.get("/download/:id", async (req, res) => {
   try {
     const file = await getFile(req.params.id);
-    console.log(file.data);
-    console.log(typeof file.data);
+
+    const buffer = Buffer.isBuffer(file.data)
+      ? file.data
+      : Buffer.from(file.data);
+
     res.setHeader("Content-Type", file.mime_type);
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="${encodeURIComponent(file.originalname)}"`
+      `attachment; filename="${file.originalname}"`
     );
-    res.setHeader("Content-Length", file.data.length);
+    res.setHeader("Content-Length", buffer.length);
 
-    res.end(file.data);
+    res.send(buffer);
   } catch (err) {
-    console.error(err);
+    console.error("Download error:", err);
     res.status(500).send("Download failed");
   }
 });
@@ -329,6 +332,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
