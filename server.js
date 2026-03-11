@@ -313,7 +313,7 @@ app.get("/download/:id", async (req, res) => {
       "Content-Length": buffer.length
     });
 
-    return res.send(buffer); // IMPORTANT: return
+    return res.end(buffer);
   } catch (err) {
     console.error("Download error:", err);
 
@@ -335,6 +335,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
