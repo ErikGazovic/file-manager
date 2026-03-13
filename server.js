@@ -288,7 +288,7 @@ app.put("/change-file/:id", async (req, res) => {
   const result = await pool.query("SELECT * FROM usersfiles WHERE id = $1", [
     id,
   ]);
-  res.json(result);
+  res.json(result.rows[0]);
 });
 
 app.get("/download/:id", async (req, res) => {
@@ -329,6 +329,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
