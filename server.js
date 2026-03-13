@@ -165,6 +165,7 @@ app.get("/get-files/:name", async (req, res) => {
         SELECT * FROM usersfiles
         WHERE tag IN (${tagPlaceholders})
         AND username = $${usernameIndex}
+        ORDER BY id ASC
         LIMIT $${limitIndex} OFFSET $${offsetIndex}
       `;
 
@@ -186,12 +187,12 @@ app.get("/get-files/:name", async (req, res) => {
       // no tags provided → just return all files for the user
       console.log(username);
       const result = await pool.query(
-        "SELECT * FROM usersfiles WHERE username = $1 LIMIT $2 OFFSET $3",
-        [username, limit, offset]
+        "SELECT * FROM usersfiles WHERE username = $1 ORDER BY id ASC LIMIT $2 OFFSET $3",
+        [username, limit, offset],
       );
       const countResult = await pool.query(
         "SELECT COUNT(*) AS count FROM usersfiles WHERE username = $1",
-        [username]
+        [username],
       );
 
       return res.json({
@@ -329,6 +330,7 @@ async function startServer() {
 }
 
 startServer();
+
 
 
 
